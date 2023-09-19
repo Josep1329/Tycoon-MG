@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {   //Variables publicas
-    public float walkSpeed, runSpeed;
+    public Transform cameraAim;
+    public float walkSpeed, runSpeed, rotationSpeed;
     public bool canMove;
 
     // Variables privadas
@@ -27,6 +28,7 @@ public class PlayerMovement : MonoBehaviour
         {
             walk();
             Run();
+            AlignPlayer();
         }
         Gravity();
 
@@ -40,6 +42,9 @@ public class PlayerMovement : MonoBehaviour
 
         // Normalizamos el vector de movimiento
         vectorMovement = vectorMovement.normalized;
+
+        //Nos movemos en direccion a la camera
+        vectorMovement = cameraAim.TransformDirection(vectorMovement);
 
         //Movemos al player
         characterController.Move(vectorMovement * speed * Time.deltaTime);
@@ -62,6 +67,15 @@ public class PlayerMovement : MonoBehaviour
     void Gravity()
     {
         characterController.Move(new Vector3(0f, -4f * Time.deltaTime, 0f));
+    }
+
+    void AlignPlayer()
+    {
+        //Si nos estamos moviendo, alineamos la rotacion
+        if(characterController.velocity.magnitude > 0f)
+        {
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(vectorMovement), rotationSpeed * Time.deltaTime);
+        }
     }
 
 }
