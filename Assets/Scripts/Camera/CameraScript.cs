@@ -28,6 +28,8 @@ public class CameraScript : MonoBehaviour
         {
             Rotate();
         }
+
+        FollowTarget();
     }
     //funcion para rotar
     void Rotate()
