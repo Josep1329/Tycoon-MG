@@ -5,12 +5,15 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {   //Variables publicas
     public Transform cameraAim;
-    public float walkSpeed, runSpeed, rotationSpeed;
+    public float walkSpeed, runSpeed, jumpForce, rotationSpeed;
     public bool canMove;
+    public GroundDetector groundDetector;
+
 
     // Variables privadas
-    private Vector3 vectorMovement;
+    private Vector3 vectorMovement, verticalForce;
     private float speed;
+    private bool isGrounded;
     private CharacterController characterController;
 
     // Start is called before the first frame update
@@ -18,6 +21,7 @@ public class PlayerMovement : MonoBehaviour
     {
         characterController = GetComponent <CharacterController>();
         speed = walkSpeed;
+        verticalForce = Vector3.zero;
         vectorMovement = Vector3.zero;
     }
 
@@ -29,9 +33,10 @@ public class PlayerMovement : MonoBehaviour
             walk();
             Run();
             AlignPlayer();
+            Jump();
         }
         Gravity();
-
+        CheckGround();
     }
 
     void walk()
@@ -64,9 +69,30 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+
+    void Jump()
+    {
+        if(isGrounded && Input.GetAxis("Jump") > 0f)
+        {
+            
+            verticalForce = new Vector3(0f, jumpForce, 0f);
+            isGrounded = false;
+        }
+    }
+
     void Gravity()
     {
-        characterController.Move(new Vector3(0f, -4f * Time.deltaTime, 0f));
+        if (!isGrounded)
+        {
+            verticalForce += Physics.gravity * Time.deltaTime;
+        }
+        else
+        {
+            verticalForce = new Vector3(0f, -2f, 0f);
+        }
+
+        Debug.Log(verticalForce);
+        characterController.Move(verticalForce * Time.deltaTime);
     }
 
     void AlignPlayer()
@@ -76,6 +102,12 @@ public class PlayerMovement : MonoBehaviour
         {
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(vectorMovement), rotationSpeed * Time.deltaTime);
         }
+    }
+
+    void CheckGround()
+    {
+        isGrounded = groundDetector.GetIsGrounded();
+        
     }
 
 }
